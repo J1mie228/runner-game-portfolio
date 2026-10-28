@@ -1,86 +1,92 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerSwipeInput : MonoBehaviour
 {
     [SerializeField] private PlayerConfig _playerConfig;
     
+    [SerializeField] private SwipeDirection _swipeDirection = SwipeDirection.None;
+
     private Vector2 _swipeStartPosition;
     
-    private int _swipeDirection; //0 - left, 1 - right
+    public SwipeDirection LastSwipe => _swipeDirection;
     
-    public static event Action<int> OnHorizontalSwipe;
+    public static event Action<SwipeDirection> OnHorizontalSwipe;
+    
     public static event Action OnSwipeUp;
-    
-    public int SwipeDirection => _swipeDirection;
 
     private void Update()
     {
         ReadSwipeInput();
     }
-    
+
     private void ReadSwipeInput()
     {
-        if(Input.touchCount > 0)
+        if (Input.touchCount > 0)
         {
-            Touch touch = Input.GetTouch(0);
+            var touch = Input.GetTouch(0);
 
-            if(touch.phase == TouchPhase.Began)
-            {
+            if (touch.phase == TouchPhase.Began)
                 _swipeStartPosition = touch.position;
-            }
-
-            if(touch.phase == TouchPhase.Ended)
-            {
+            else if (touch.phase == TouchPhase.Ended)
                 HandleSwipe(touch.position);
-            }
+
+            return;
         }
-        else
+        
+        if (Input.GetMouseButtonDown(0))
         {
-            if (Input.GetMouseButtonDown(0))
-            {
-                _swipeStartPosition = Input.mousePosition;
-            }
-            else if (Input.GetMouseButtonUp(0))
-            {
-                HandleSwipe(Input.mousePosition);
-            }
+            _swipeStartPosition = Input.mousePosition;
+        }
+        else if (Input.GetMouseButtonUp(0))
+        {
+            HandleSwipe(Input.mousePosition);
         }
     }
 
-    private void HandleSwipe(Vector2 swipeEndPosition)
+    private void HandleSwipe(Vector2 endPosition)
     {
-        Vector2 swipeDelta = swipeEndPosition - _swipeStartPosition;
+        var delta = endPosition - _swipeStartPosition;
 
-        float absX = Mathf.Abs(swipeDelta.x);
-        float absY = Mathf.Abs(swipeDelta.y);
-
-        if (Mathf.Max(absX, absY) < _playerConfig.SwipeThreshold) 
+        if (!IsLongEnough(delta))
         {
+            _swipeDirection = SwipeDirection.None;
             return;
         }
 
-        if (Mathf.Abs(swipeDelta.x) < Mathf.Abs(swipeDelta.y))
+        _swipeDirection = Classify(delta);
+        Dispatch(_swipeDirection);
+    }
+
+    private bool IsLongEnough(Vector2 delta)
+    {
+        float absX = Mathf.Abs(delta.x);
+        float absY = Mathf.Abs(delta.y);
+        return Mathf.Max(absX, absY) >= _playerConfig.SwipeThreshold;
+    }
+
+    private static SwipeDirection Classify(Vector2 delta)
+    {
+        // Вертикальный свайп
+        if (Mathf.Abs(delta.x) < Mathf.Abs(delta.y))
+            return delta.y > 0 ? SwipeDirection.Up : SwipeDirection.None;
+
+        // Горизонтальный свайп
+        return delta.x > 0 ? SwipeDirection.Right : SwipeDirection.Left;
+    }
+
+    private static void Dispatch(SwipeDirection direction)
+    {
+        switch (direction)
         {
-            if(swipeDelta.y > 0)
-            {
+            case SwipeDirection.Left:
+            case SwipeDirection.Right:
+                OnHorizontalSwipe?.Invoke(direction);
+                break;
+
+            case SwipeDirection.Up:
                 OnSwipeUp?.Invoke();
-            }
-
-            return;
-        }
-
-        if(swipeDelta.x > 0)
-        {
-            _swipeDirection = 1;
-            OnHorizontalSwipe?.Invoke(SwipeDirection);
-        }
-        else if(swipeDelta.x < 0)
-        {
-            _swipeDirection = 0;
-            OnHorizontalSwipe?.Invoke(SwipeDirection);
+                break;
         }
     }
 }

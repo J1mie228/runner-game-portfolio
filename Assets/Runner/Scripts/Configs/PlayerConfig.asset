@@ -12,3 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8b4302b4a5c6d54b976a0f7d5ffa1f0, type: 3}
   m_Name: PlayerConfig
   m_EditorClassIdentifier: 
+  _laneXPositions:
+  - -2
+  - 0
+  - 2
+  _laneChangeSpeed: 12
+  _jumpHeight: 1.5
+  _gravity: -20
+  _swipeThreshold: 30

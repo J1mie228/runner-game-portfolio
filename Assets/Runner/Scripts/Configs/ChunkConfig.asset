@@ -9,11 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 149cd5eef3ddab348b729cdb96338a68, type: 3}
-  m_Name: TrackConfig
+  m_Script: {fileID: 11500000, guid: 72cae30a2f8783d4e9226c385f6486a9, type: 3}
+  m_Name: ChunkConfig
   m_EditorClassIdentifier: 
-  _baseSpeed: 5
-  _maxSpeed: 30
-  _speedGrowthPerSecond: 0.5
-  _chunkLength: 60
-  _recycleZ: -30
+  _initialMoveSpeed: 8
+  _maxMoveSpeed: 30
+  _speedIncreasePerSecond: 0.5
+  _recycleDistance: 40
